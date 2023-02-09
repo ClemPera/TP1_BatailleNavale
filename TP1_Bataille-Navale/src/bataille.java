@@ -30,30 +30,74 @@ public class bataille {
      * @return Renvoie "vraie" si on peut mettre le bateau sur les cases correspondantes et sinon renvoie "faux"
      */
     public static boolean posOk(int [][]grille, int l, int c, int d, int t){
-        if(d == 1) { //Si horizontal
-            if(l+t < 10)
-                return true;
+        //Fonction qui vérifie si sur [l][c] il n'y a pas déjà un bateau (vérifier suivant la longueur du bateau)
+
+        int verifLong = 0;
+
+        if(d == 1) { //Si c'est horizontal
+            if ((c + t) <= 10) {
+                for (int i = 0; i < t; i++) {
+                    if (grille[l][c + i] == 0) {
+                        verifLong++;
+                    }
+                }
+            }
         }
-        else if(d == 2) { //Si vertical
-            if(c+t < 10)
-                return true;
+        else if (d == 2) {//Si c'est horizontal
+            if ((l + t) <= 10) {
+                for (int i = 1; i < t; i++) {
+                    if (grille[l + i][c] == 0) {
+                        verifLong++;
+                    }
+                }
+            }
         }
-        return false;
+
+        if(verifLong==t)
+            return true;
+        else
+            return false;
     }
 
     /**
      * La procédure va mettre au hasard les 5 bateaux sur la grille "grilleOrdi"
      */
     public static void initGrilleOrdi() {
-        int ligne = randRange(0,10);
-        int colonne = randRange(0,10);
-        int numDirection = randRange(1,3); //1 pour horizontal et 2 pour vertical
-
         //Utiliser la fonction posOk pour savoir si le tirage est correct
-        boolean ok = posOk(grilleOrdi,ligne,colonne,numDirection,5);
-        while(!ok)
-            ok = posOk(grilleOrdi,ligne,colonne,numDirection,5);
 
+        int typeBateau = 3; //Nombre de case du bateau
+
+        //Fonction à part?
+        boolean ok = false;
+        int ligne = 0, colonne = 0, numDirection = 0;
+        while(!ok){
+            ligne = randRange(0, 10);
+            colonne = randRange(0, 10);
+            numDirection = randRange(1, 3); //1 pour horizontal et 2 pour vertical
+
+            ok = posOk(grilleOrdi, ligne, colonne, numDirection, typeBateau);
+        }
+
+        ajoutBateauOrdi(ligne, colonne, numDirection, typeBateau);
+    }
+
+    /**
+     * Procédure pour ajouter un bateau à la grille ordi
+     * @param l numero de ligne
+     * @param c numero de colonne
+     * @param t numero de direction
+     * @param type type de bateau
+     */
+    public static void ajoutBateauOrdi(int l, int c, int t, int type){
+       // System.out.println(l+" "+c+" "+numDir+" "+type);
+        grilleOrdi[l][c] = type;
+
+        for (int i = 1; i < type; i++) {
+            if(t == 1) //Si c'est horizontal
+                grilleOrdi[l][c + i] = type;
+            else
+                grilleOrdi[l+i][c] = type;
+        }
     }
 
     /**
@@ -83,6 +127,7 @@ public class bataille {
         }
     }
     public static void main(String[] args) {
+        initGrilleOrdi();
         AfficherGrille(grilleOrdi);
     }
 }
