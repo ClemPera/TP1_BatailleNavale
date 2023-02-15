@@ -1,8 +1,8 @@
 /**
  * @author Clément Pera
- *
  */
 import java.util.Random;
+import java.util.Scanner;
 public class bataille {
     public static Random rand = new Random();
 
@@ -30,22 +30,33 @@ public class bataille {
      * @return Renvoie "vraie" si on peut mettre le bateau sur les cases correspondantes et sinon renvoie "faux"
      */
     public static boolean posOk(int [][]grille, int l, int c, int d, int t){
-        //Fonction qui vérifie si sur [l][c] il n'y a pas déjà un bateau (vérifier suivant la longueur du bateau)
+        int longueur = 0;
+
+        if(t == 1){
+            longueur = 5;
+        } else if(t == 2){
+            longueur = 4;
+        } else if(t == 3){
+            longueur = 3;
+        } else if(t == 4){
+            longueur = 3;
+        } else if(t == 5){
+            longueur = 2;
+        }
 
         int verifLong = 0;
 
         if(d == 1) { //Si c'est horizontal
-            if ((c + t) <= 10) {
-                for (int i = 0; i < t; i++) {
+            if ((c + longueur) <= 10) {
+                for (int i = 0; i < longueur; i++) {
                     if (grille[l][c + i] == 0) {
                         verifLong++;
                     }
                 }
             }
-        }
-        else if (d == 2) {//Si c'est horizontal
-            if ((l + t) <= 10) {
-                for (int i = 1; i < t; i++) {
+        } else if (d == 2) {//Si c'est vertical
+            if ((l + longueur) <= 10) {
+                for (int i = 0; i < longueur; i++) {
                     if (grille[l + i][c] == 0) {
                         verifLong++;
                     }
@@ -53,7 +64,7 @@ public class bataille {
             }
         }
 
-        if(verifLong==t)
+        if(verifLong==longueur)
             return true;
         else
             return false;
@@ -70,33 +81,52 @@ public class bataille {
         //Fonction à part?
         boolean ok = false;
         int ligne = 0, colonne = 0, numDirection = 0;
-        while(!ok){
-            ligne = randRange(0, 10);
-            colonne = randRange(0, 10);
-            numDirection = randRange(1, 3); //1 pour horizontal et 2 pour vertical
+        for (int i = 1; i <= 5; i++)
+        {
+            while (!ok) {
+                ligne = randRange(0, 10);
+                colonne = randRange(0, 10);
+                numDirection = randRange(1, 3); //1 pour horizontal et 2 pour vertical
 
-            ok = posOk(grilleOrdi, ligne, colonne, numDirection, typeBateau);
+                ok = posOk(grilleOrdi, ligne, colonne, numDirection, i);
+            }
+            ajoutBateau(grilleOrdi, ligne, colonne, numDirection, i);
+            ok=false;
         }
-
-        ajoutBateauOrdi(ligne, colonne, numDirection, typeBateau);
     }
 
     /**
      * Procédure pour ajouter un bateau à la grille ordi
+     *
      * @param l numero de ligne
      * @param c numero de colonne
-     * @param t numero de direction
+     * @param d numero de direction
      * @param type type de bateau
      */
-    public static void ajoutBateauOrdi(int l, int c, int t, int type){
-       // System.out.println(l+" "+c+" "+numDir+" "+type);
-        grilleOrdi[l][c] = type;
+    public static void ajoutBateau(int [][]grille,int l, int c, int d, int type){
+        int longueur = 0;
 
-        for (int i = 1; i < type; i++) {
-            if(t == 1) //Si c'est horizontal
-                grilleOrdi[l][c + i] = type;
-            else
-                grilleOrdi[l+i][c] = type;
+        if(type == 1){
+            longueur = 5;
+        } else if(type == 2){
+            longueur = 4;
+        } else if(type == 3){
+            longueur = 3;
+        } else if(type == 4){
+            longueur = 3;
+        } else if(type == 5){
+            longueur = 2;
+        }
+
+        grille[l][c] = type;
+
+        for (int i = 0; i < longueur; i++) {
+            if(d == 1) { //Si c'est horizontal
+                grille[l][c + i] = type;
+            }
+            else {
+                grille[l + i][c] = type;
+            }
         }
     }
 
@@ -126,8 +156,111 @@ public class bataille {
             System.out.println();
         }
     }
+
+    public static void initGrilleJeu(){
+        //Demander pour chaque bateau puis les placer avec un while dans ligne'idéal et les vérif avec posOk
+        int ligne = 0;
+        int colonne = 0;
+        int direction = 0;
+        boolean ok = false;
+
+        for(int i = 1; i <=5; i++) {
+            while (!ok) {
+                ligne = questionUtilisateur(0, i); //Quel ligne pour un porte-avion
+                colonne = questionUtilisateur(1, i); //Quel ligne pour un porte-avion
+                direction = questionUtilisateur(2, i); //Quel ligne pour un porte-avion
+
+                ok = posOk(grilleJeu, ligne, colonne, direction, i);
+                if (!ok) {
+                    System.out.println("L'entrée n'est pas correct, veuillez ressayer");
+                }
+            }
+            ajoutBateau(grilleJeu, ligne, colonne, direction, i);
+            AfficherGrille(grilleJeu);
+            ok = false;
+        }
+    }
+
+    /**
+     * Pose une question à l'utilisateur par rapport à la lettre/colonne ou direction
+     *
+     * @param lct 0 = ligne, 1 = colonne, 2 = direction
+     * @param type 0 = porte avion, 1 = croiseur, 2 = contre-torpilleur, 3 = sous-marin, 4 = torpilleur
+     * @return
+     */
+    public static int questionUtilisateur(int lct, int type){
+        String str = "";
+        Scanner entreeUtilisateur = new Scanner(System.in);
+        String longstr = "";
+        int longint = 0;
+        boolean ok = false;
+
+        while(!ok) {
+            ok = true;
+            if(lct == 0){
+                str = "Donner la ligne pour le ";
+            } else if(lct == 1){
+                str = "Donner la colonne pour le ";
+            } else if(lct == 2){
+                str = "Donner la direction pour le ";
+            }
+
+            if (type == 1) {
+                System.out.println(str + "porte-avion : ");
+            } else if (type == 2) {
+                System.out.println(str + "croiseur : ");
+            } else if (type == 3) {
+                System.out.println(str + "contre-torpilleur : ");
+            } else if (type == 4) {
+                System.out.println(str + "sous-marin : ");
+            } else if (type == 5) {
+                System.out.println(str + "torpilleur : ");
+            }
+
+            longstr = entreeUtilisateur.nextLine();
+            //Vérifier que toutes les inputs soient corrects (avec while et un ok;?)
+
+            if (lct == 0){
+                try {
+                    longint = Integer.parseInt(longstr);
+                }catch(NumberFormatException e){ok = false;}
+                if (longint < 0 || longint > 9) { //Vérification si la valeur de longint est correct
+                    ok = false;
+                }
+            }
+            else if (lct == 1) {
+                longint = longstr.charAt(0) - 65;
+                if (longint < 0 || longint > 9) { //Vérification si la valeur de longint est correct
+                    ok = false;
+                }
+            }
+            else if (lct == 2){
+                longint = longstr.charAt(0);
+                try {
+                    longint = Integer.parseInt(longstr);
+                }catch(NumberFormatException e){ok = false;}
+                if (longint <= 0 && longint > 2) { //Vérification si la valeur de longint est correct
+                    ok = false;
+                }
+            }
+
+            if(!ok){
+                System.out.println("Il y a une erreur dans votre entrée, veuillez réessayer");
+            }
+        }
+
+        return longint;
+    }
+
+
     public static void main(String[] args) {
         initGrilleOrdi();
-        AfficherGrille(grilleOrdi);
+        //AfficherGrille(grilleOrdi);
+
+        System.out.println();
+        initGrilleJeu();
+        AfficherGrille(grilleJeu);
+
+        //questionUtilisateur(1,0);
     }
 }
