@@ -74,11 +74,6 @@ public class bataille {
      * La procédure va mettre au hasard les 5 bateaux sur la grille "grilleOrdi"
      */
     public static void initGrilleOrdi() {
-        //Utiliser la fonction posOk pour savoir si le tirage est correct
-
-        int typeBateau = 3; //Nombre de case du bateau
-
-        //Fonction à part?
         boolean ok = false;
         int ligne = 0, colonne = 0, numDirection = 0;
         for (int i = 1; i <= 5; i++)
@@ -229,13 +224,12 @@ public class bataille {
                 }
             }
             else if (lct == 1) {
-                longint = longstr.charAt(0) - 65;
+                longint = Character.toUpperCase(longstr.charAt(0)) - 65;
                 if (longint < 0 || longint > 9) { //Vérification si la valeur de longint est correct
                     ok = false;
                 }
             }
             else if (lct == 2){
-                longint = longstr.charAt(0);
                 try {
                     longint = Integer.parseInt(longstr);
                 }catch(NumberFormatException e){ok = false;}
@@ -253,14 +247,80 @@ public class bataille {
     }
 
 
+    /**
+     * Fonction qui retourne "vrai" si le bateau est coulé sinon "faux"
+     *
+     * @param grille Sur quel grille vérifier
+     * @param type numéro du bateau compris entre 1 et 5
+     */
+    public static boolean couler(int [][]grille, int type) {
+        for (int l = 0; l < 10; l++) {
+            for (int c = 0; c < 10; c++) {
+                if (grille[l][c] == type) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Affiche soit « Touché », soit « Coulé » (en indiquant de quel bateau il s’agit), soit « À l’eau ». Met aussi la grille à jour
+     *
+     * @param grille Sur quel grille vérifier
+     * @param l ligne
+     * @param c colonne
+     */
+    public static void mouvement(int [][]grille, int l, int c){
+        int numBateau = 0;
+
+        if(grille[l][c] != 0){
+            numBateau = grille[l][c];
+            grille[l][c] = 6;
+
+            if(couler(grille, numBateau)){
+                System.out.println("Le bateau " + numBateau + " a été coulé!");
+            } else{
+                System.out.println("Touché");
+            }
+        }
+        else{
+            System.out.println("A l'eau");
+        }
+    }
+
+    /**
+     * renvoie un tableau avec 2 entiers tirées au hasard entre 0 et 9
+     *
+     * @return un tableau avec 2 entiers tirées au hasard entre 0 et 9
+     */
+    public static int[] tirOrdinateur(){
+        int[] intTab = new int[2];
+        intTab[0] = randRange(0,10);
+        intTab[1] = randRange(0,10);
+
+        return intTab;
+    }
+
+
+    public static boolean vainqueur(int [][]grille){
+        for (int l = 0; l < 10; l++) {
+            for (int c = 0; c < 10; c++) {
+                if (grille[l][c] != 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public static void main(String[] args) {
         initGrilleOrdi();
         //AfficherGrille(grilleOrdi);
 
         System.out.println();
         initGrilleJeu();
-        AfficherGrille(grilleJeu);
-
         //questionUtilisateur(1,0);
     }
 }
