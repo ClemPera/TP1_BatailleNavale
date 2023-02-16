@@ -161,17 +161,22 @@ public class bataille {
 
         for(int i = 1; i <=5; i++) {
             while (!ok) {
+                AfficherGrille(grilleJeu);
+                System.out.println();
                 ligne = questionUtilisateur(0, i); //Quel ligne pour un porte-avion
                 colonne = questionUtilisateur(1, i); //Quel ligne pour un porte-avion
                 direction = questionUtilisateur(2, i); //Quel ligne pour un porte-avion
 
                 ok = posOk(grilleJeu, ligne, colonne, direction, i);
                 if (!ok) {
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
                     System.out.println("L'entrée n'est pas correct, veuillez ressayer");
                 }
             }
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
             ajoutBateau(grilleJeu, ligne, colonne, direction, i);
-            AfficherGrille(grilleJeu);
             ok = false;
         }
     }
@@ -274,18 +279,18 @@ public class bataille {
     public static void mouvement(int [][]grille, int l, int c){
         int numBateau = 0;
 
-        if(grille[l][c] != 0){
+        if(grille[l][c] != 0 && grille[l][c] != 6){
             numBateau = grille[l][c];
             grille[l][c] = 6;
 
             if(couler(grille, numBateau)){
-                System.out.println("Le bateau " + numBateau + " a été coulé!");
+                System.out.print("Le bateau " + numBateau + " a été coulé!");
             } else{
-                System.out.println("Touché");
+                System.out.print("Touché");
             }
         }
         else{
-            System.out.println("A l'eau");
+            System.out.print("A l'eau");
         }
     }
 
@@ -296,6 +301,7 @@ public class bataille {
      */
     public static int[] tirOrdinateur(){
         int[] intTab = new int[2];
+
         intTab[0] = randRange(0,10);
         intTab[1] = randRange(0,10);
 
@@ -306,7 +312,7 @@ public class bataille {
     public static boolean vainqueur(int [][]grille){
         for (int l = 0; l < 10; l++) {
             for (int c = 0; c < 10; c++) {
-                if (grille[l][c] != 0) {
+                if (grille[l][c] != 0 && grille[l][c] != 6) {
                     return false;
                 }
             }
@@ -315,12 +321,94 @@ public class bataille {
         return true;
     }
 
-    public static void main(String[] args) {
-        initGrilleOrdi();
-        //AfficherGrille(grilleOrdi);
+    public static int[] tirJoueur(){
+        int[] intTab = new int[2];
+        boolean ok = false;
+        Scanner entreeUtilisateur = new Scanner(System.in);
 
-        System.out.println();
+        while(!ok) {
+            ok = true;
+
+            System.out.println("Rentrer la ligne où attaquer : ");
+            try {
+                intTab[0] = Integer.parseInt(entreeUtilisateur.nextLine());
+            } catch (NumberFormatException e) {
+                ok = false;
+            }
+            if (intTab[0] < 0 || intTab[0] > 9) { //Vérification si la valeur de longint est correct
+                ok = false;
+            }
+            if(ok){
+                System.out.println("Rentrer la colonne où attaquer : ");
+                try {
+                    intTab[1] = Character.toUpperCase(entreeUtilisateur.nextLine().charAt(0)) - 65;
+                } catch (NumberFormatException e) {
+                    ok = false;
+                }
+                if (intTab[1] < 0 || intTab[1] > 9) { //Vérification si la valeur de longint est correct
+                    ok = false;
+                }
+            }
+
+            if (!ok) {
+                System.out.println("Il y a une erreur dans votre entrée, veuillez réessayer");
+            }
+
+        }
+
+        return intTab;
+    }
+
+    public static void engagement(){
+        boolean fin = false;
+        int[] ordiTab = new int[0];
+        int[] joueurTab = new int[0];
+
+        initGrilleOrdi();
         initGrilleJeu();
-        //questionUtilisateur(1,0);
+
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+
+        while(!fin) {
+            //Tir de l'ordinateur
+            System.out.println("L'ordinateur attaque! : ");
+            ordiTab = tirOrdinateur();
+            mouvement(grilleJeu,ordiTab[0],ordiTab[1]);
+
+            System.out.println();
+            System.out.println();
+            //Vérification s'il y a un vainqueur
+            if (vainqueur(grilleJeu)) {
+                System.out.println("L'ordinateur a gagné!");
+                fin = true;
+            }else{
+                System.out.println("Grille ordi");
+                AfficherGrille(grilleOrdi);
+
+                System.out.println();
+                System.out.println("Grille joueur");
+                AfficherGrille(grilleJeu);
+                System.out.println();
+                //Tir du joueur
+                joueurTab = tirJoueur();
+                System.out.print("\033[H\033[2J");
+                System.out.flush();
+
+                System.out.println("Vous avez attaqué! : ");
+                mouvement(grilleOrdi, joueurTab[0], joueurTab[1]);
+                System.out.println();
+
+                //Vérification s'il y a un vainqueur
+                if (vainqueur(grilleOrdi)) {
+                    System.out.println("Vous avez gagné!");
+                    fin = true;
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        engagement();
     }
 }
