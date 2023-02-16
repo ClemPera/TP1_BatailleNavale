@@ -8,7 +8,7 @@ public class bataille {
 
     /**
      * Tire des entiers aléatoire entre a inclus et b exclu
-     * @param a à partir de se nombre
+     * @param a à partir de ce nombre
      * @param b à jusqu'à ce nombre b exclu
      * @return retourne un nombre entier aléatoire entre a et b
      */
@@ -93,9 +93,9 @@ public class bataille {
     /**
      * Procédure pour ajouter un bateau à la grille ordi
      *
-     * @param l numero de ligne
-     * @param c numero de colonne
-     * @param d numero de direction
+     * @param l numéro de ligne
+     * @param c numéro de colonne
+     * @param d numéro de direction
      * @param type type de bateau
      */
     public static void ajoutBateau(int [][]grille,int l, int c, int d, int type){
@@ -132,7 +132,7 @@ public class bataille {
      */
     public static void AfficherGrille(int [][]grille){
         System.out.print("    ");
-        for(char s = 'A'; s <= 'J'; s++){ //Affiche une ligne avec les lettre de A à J
+        for(char s = 'A'; s <= 'J'; s++){ //Affiche une ligne avec les lettres de A à J
             System.out.print(s);
             System.out.print(' ');
         }
@@ -153,7 +153,7 @@ public class bataille {
     }
 
     public static void initGrilleJeu(){
-        //Demander pour chaque bateau puis les placer avec un while dans ligne'idéal et les vérif avec posOk
+        //Demander pour chaque bateau puis les placer avec un while dans la ligne idéal et les vérif avec posOk
         int ligne = 0;
         int colonne = 0;
         int direction = 0;
@@ -163,9 +163,9 @@ public class bataille {
             while (!ok) {
                 AfficherGrille(grilleJeu);
                 System.out.println();
-                ligne = questionUtilisateur(0, i); //Quel ligne pour un porte-avion
-                colonne = questionUtilisateur(1, i); //Quel ligne pour un porte-avion
-                direction = questionUtilisateur(2, i); //Quel ligne pour un porte-avion
+                ligne = questionUtilisateur(0, i); //Quelle ligne pour un porte-avion
+                colonne = questionUtilisateur(1, i); //Quelle ligne pour un porte-avion
+                direction = questionUtilisateur(2, i); //Quelle ligne pour un porte-avion
 
                 ok = posOk(grilleJeu, ligne, colonne, direction, i);
                 if (!ok) {
@@ -186,12 +186,12 @@ public class bataille {
      *
      * @param lct 0 = ligne, 1 = colonne, 2 = direction
      * @param type 0 = porte avion, 1 = croiseur, 2 = contre-torpilleur, 3 = sous-marin, 4 = torpilleur
-     * @return
+     * @return retourne un entier indiquant la ligne, colonne ou direction que l'utilisateur a rentré
      */
     public static int questionUtilisateur(int lct, int type){
         String str = "";
         Scanner entreeUtilisateur = new Scanner(System.in);
-        String longstr = "";
+        String longstr;
         int longint = 0;
         boolean ok = false;
 
@@ -218,7 +218,6 @@ public class bataille {
             }
 
             longstr = entreeUtilisateur.nextLine();
-            //Vérifier que toutes les inputs soient corrects (avec while et un ok;?)
 
             if (lct == 0){
                 try {
@@ -238,7 +237,7 @@ public class bataille {
                 try {
                     longint = Integer.parseInt(longstr);
                 }catch(NumberFormatException e){ok = false;}
-                if (longint <= 0 && longint > 2) { //Vérification si la valeur de longint est correct
+                if (longint <= 0 || longint > 2) { //Vérification si la valeur de longint est correct
                     ok = false;
                 }
             }
@@ -255,7 +254,7 @@ public class bataille {
     /**
      * Fonction qui retourne "vrai" si le bateau est coulé sinon "faux"
      *
-     * @param grille Sur quel grille vérifier
+     * @param grille Sur quelle grille vérifier
      * @param type numéro du bateau compris entre 1 et 5
      */
     public static boolean couler(int [][]grille, int type) {
@@ -272,12 +271,12 @@ public class bataille {
     /**
      * Affiche soit « Touché », soit « Coulé » (en indiquant de quel bateau il s’agit), soit « À l’eau ». Met aussi la grille à jour
      *
-     * @param grille Sur quel grille vérifier
+     * @param grille Sur quelle grille vérifier
      * @param l ligne
      * @param c colonne
      */
     public static void mouvement(int [][]grille, int l, int c){
-        int numBateau = 0;
+        int numBateau;
 
         if(grille[l][c] != 0 && grille[l][c] != 6){
             numBateau = grille[l][c];
@@ -295,9 +294,9 @@ public class bataille {
     }
 
     /**
-     * renvoie un tableau avec 2 entiers tirées au hasard entre 0 et 9
+     * Renvoie un tableau avec 2 entiers tiré au hasard entre 0 et 9 pour indiquer où l'ordinateur va tirer
      *
-     * @return un tableau avec 2 entiers tirées au hasard entre 0 et 9
+     * @return un tableau avec 2 entiers tiré au hasard entre 0 et 9
      */
     public static int[] tirOrdinateur(){
         int[] intTab = new int[2];
@@ -309,6 +308,12 @@ public class bataille {
     }
 
 
+    /**
+     * Retourne vrai s'il n'y a plus de bateau sur la grille envoyé
+     *
+     * @param grille sur quelle grille vérifier
+     * @return vrai s'il n'y a plus de bateau sinon faux
+     */
     public static boolean vainqueur(int [][]grille){
         for (int l = 0; l < 10; l++) {
             for (int c = 0; c < 10; c++) {
@@ -321,6 +326,11 @@ public class bataille {
         return true;
     }
 
+    /**
+     * Fonction qui demande au joueur où il veut tirer et renvoie les coordonnées
+     *
+     * @return tableau de 2 entiers pour indiquer où le joueur va tirer
+     */
     public static int[] tirJoueur(){
         int[] intTab = new int[2];
         boolean ok = false;
@@ -359,10 +369,14 @@ public class bataille {
         return intTab;
     }
 
+    /**
+     * Fonction qui replie les deux grilles et fait jouer à tour de rôle l'ordinateur et le joueur
+     *
+     */
     public static void engagement(){
         boolean fin = false;
-        int[] ordiTab = new int[0];
-        int[] joueurTab = new int[0];
+        int[] ordiTab;
+        int[] joueurTab;
 
         initGrilleOrdi();
         initGrilleJeu();
@@ -408,6 +422,9 @@ public class bataille {
         }
     }
 
+    /**
+     * Fonction principale
+     */
     public static void main(String[] args) {
         engagement();
     }
