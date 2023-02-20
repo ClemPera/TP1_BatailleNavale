@@ -152,6 +152,41 @@ public class bataille {
         }
     }
 
+    /**
+     * Affiche la grille avec des point d'interrogation partout sauf où un bateau a été touché
+     *
+     * @param grille Grille à utilisé
+     */
+    public static void AfficherGrilleInterrogation(int [][]grille){
+        System.out.print("    ");
+        for(char s = 'A'; s <= 'J'; s++){ //Affiche une ligne avec les lettres de A à J
+            System.out.print(s);
+            System.out.print(' ');
+        }
+
+        System.out.println();
+        System.out.println("   --------------------");
+
+        for(int n = 0; n < 10; n++){ //Affiche la grille avec les nombres de 0 à 9
+            System.out.print(n);
+            System.out.print(" | ");
+
+            for(int i = 0; i < 10; i++){
+                if(grille[n][i] == 6){
+                    System.out.print(grille[n][i]);
+                }
+                else{
+                    System.out.print("?");
+                }
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
+    }
+
+    /**
+     * Initialise la grille de jeu de l'utilisateur
+     */
     public static void initGrilleJeu(){
         //Demander pour chaque bateau puis les placer avec un while dans la ligne idéal et les vérif avec posOk
         int ligne = 0;
@@ -327,43 +362,40 @@ public class bataille {
     }
 
     /**
+     * <pre>
      * Fonction qui demande au joueur où il veut tirer et renvoie les coordonnées
      *
+     * Pour intTab[] la valeur 0 correspond à la ligne et la valeur 1 à la colonne
+     * </pre>
      * @return tableau de 2 entiers pour indiquer où le joueur va tirer
      */
+
     public static int[] tirJoueur(){
         int[] intTab = new int[2];
         boolean ok = false;
         Scanner entreeUtilisateur = new Scanner(System.in);
+        String texteEntree;
 
         while(!ok) {
             ok = true;
 
-            System.out.println("Rentrer la ligne où attaquer : ");
+            System.out.println("Rentrer la ligne et la colonne où attaquer (ex: B3) : ");
             try {
-                intTab[0] = Integer.parseInt(entreeUtilisateur.nextLine());
-            } catch (NumberFormatException e) {
+                texteEntree = entreeUtilisateur.nextLine();
+
+                intTab[0] = Integer.parseInt(String.valueOf(texteEntree.charAt(1)));
+                intTab[1] = Character.toUpperCase(texteEntree.charAt(0)) - 65;
+            } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
                 ok = false;
             }
-            if (intTab[0] < 0 || intTab[0] > 9) { //Vérification si la valeur de longint est correct
+
+            if (intTab[0] < 0 || intTab[0] > 9 || intTab[1] < 0 || intTab[1] > 9) { //Vérification si la valeur de longint est correct
                 ok = false;
-            }
-            if(ok){
-                System.out.println("Rentrer la colonne où attaquer : ");
-                try {
-                    intTab[1] = Character.toUpperCase(entreeUtilisateur.nextLine().charAt(0)) - 65;
-                } catch (NumberFormatException e) {
-                    ok = false;
-                }
-                if (intTab[1] < 0 || intTab[1] > 9) { //Vérification si la valeur de longint est correct
-                    ok = false;
-                }
             }
 
             if (!ok) {
                 System.out.println("Il y a une erreur dans votre entrée, veuillez réessayer");
             }
-
         }
 
         return intTab;
@@ -398,7 +430,7 @@ public class bataille {
                 fin = true;
             }else{
                 System.out.println("Grille ordi");
-                AfficherGrille(grilleOrdi);
+                AfficherGrilleInterrogation(grilleOrdi);
 
                 System.out.println();
                 System.out.println("Grille joueur");
