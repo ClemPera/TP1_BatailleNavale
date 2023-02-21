@@ -1,8 +1,17 @@
-/**
- * @author Clément Pera
- */
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.Random;
 import java.util.Scanner;
+
+/**
+ * Bataille navale Multijoueur local
+ *
+ * @author Clément Pera
+ */
 public class bataille {
     public static Random rand = new Random();
 
@@ -15,8 +24,8 @@ public class bataille {
     public static int randRange(int a, int b){
         return rand.nextInt(b-a)+a;
     }
-    public static int[][]grilleOrdi = new int [10][10];
-    public static int[][]grilleJeu = new int [10][10];
+    public static int[][] grilleClient = new int [10][10];
+    public static int[][] grilleServeur = new int [10][10];
 
     /**
      * Vérifie si la position de placement du bateau est correct
@@ -68,26 +77,6 @@ public class bataille {
             return true;
         else
             return false;
-    }
-
-    /**
-     * La procédure va mettre au hasard les 5 bateaux sur la grille "grilleOrdi"
-     */
-    public static void initGrilleOrdi() {
-        boolean ok = false;
-        int ligne = 0, colonne = 0, numDirection = 0;
-        for (int i = 1; i <= 5; i++)
-        {
-            while (!ok) {
-                ligne = randRange(0, 10);
-                colonne = randRange(0, 10);
-                numDirection = randRange(1, 3); //1 pour horizontal et 2 pour vertical
-
-                ok = posOk(grilleOrdi, ligne, colonne, numDirection, i);
-            }
-            ajoutBateau(grilleOrdi, ligne, colonne, numDirection, i);
-            ok=false;
-        }
     }
 
     /**
@@ -186,8 +175,10 @@ public class bataille {
 
     /**
      * Initialise la grille de jeu de l'utilisateur
+     *
+     * @param grille
      */
-    public static void initGrilleJeu(){
+    public static void initGrille(int[][]grille){
         //Demander pour chaque bateau puis les placer avec un while dans la ligne idéal et les vérif avec posOk
         int ligne = 0;
         int colonne = 0;
@@ -196,13 +187,13 @@ public class bataille {
 
         for(int i = 1; i <=5; i++) {
             while (!ok) {
-                AfficherGrille(grilleJeu);
+                AfficherGrille(grille);
                 System.out.println();
                 ligne = questionUtilisateur(0, i); //Quelle ligne pour un porte-avion
                 colonne = questionUtilisateur(1, i); //Quelle ligne pour un porte-avion
                 direction = questionUtilisateur(2, i); //Quelle ligne pour un porte-avion
 
-                ok = posOk(grilleJeu, ligne, colonne, direction, i);
+                ok = posOk(grille, ligne, colonne, direction, i);
                 if (!ok) {
                     System.out.print("\033[H\033[2J");
                     System.out.flush();
@@ -211,7 +202,7 @@ public class bataille {
             }
             System.out.print("\033[H\033[2J");
             System.out.flush();
-            ajoutBateau(grilleJeu, ligne, colonne, direction, i);
+            ajoutBateau(grille, ligne, colonne, direction, i);
             ok = false;
         }
     }
@@ -329,21 +320,6 @@ public class bataille {
     }
 
     /**
-     * Renvoie un tableau avec 2 entiers tiré au hasard entre 0 et 9 pour indiquer où l'ordinateur va tirer
-     *
-     * @return un tableau avec 2 entiers tiré au hasard entre 0 et 9
-     */
-    public static int[] tirOrdinateur(){
-        int[] intTab = new int[2];
-
-        intTab[0] = randRange(0,10);
-        intTab[1] = randRange(0,10);
-
-        return intTab;
-    }
-
-
-    /**
      * Retourne vrai s'il n'y a plus de bateau sur la grille envoyé
      *
      * @param grille sur quelle grille vérifier
@@ -407,11 +383,11 @@ public class bataille {
      */
     public static void engagement(){
         boolean fin = false;
-        int[] ordiTab;
+        //int[] ordiTab;
         int[] joueurTab;
 
-        initGrilleOrdi();
-        initGrilleJeu();
+        initGrille(grilleClient);
+        initGrille(grilleServeur);
 
         System.out.print("\033[H\033[2J");
         System.out.flush();
@@ -419,22 +395,22 @@ public class bataille {
         while(!fin) {
             //Tir de l'ordinateur
             System.out.println("L'ordinateur attaque! : ");
-            ordiTab = tirOrdinateur();
-            mouvement(grilleJeu,ordiTab[0],ordiTab[1]);
+            //ordiTab = tirOrdinateur();
+            //mouvement(grilleServeur,ordiTab[0],ordiTab[1]);
 
             System.out.println();
             System.out.println();
             //Vérification s'il y a un vainqueur
-            if (vainqueur(grilleJeu)) {
+            if (vainqueur(grilleServeur)) {
                 System.out.println("L'ordinateur a gagné!");
                 fin = true;
             }else{
                 System.out.println("Grille ordi");
-                AfficherGrilleInterrogation(grilleOrdi);
+                AfficherGrilleInterrogation(grilleClient);
 
                 System.out.println();
                 System.out.println("Grille joueur");
-                AfficherGrille(grilleJeu);
+                AfficherGrille(grilleServeur);
                 System.out.println();
                 //Tir du joueur
                 joueurTab = tirJoueur();
@@ -442,11 +418,11 @@ public class bataille {
                 System.out.flush();
 
                 System.out.println("Vous avez attaqué! : ");
-                mouvement(grilleOrdi, joueurTab[0], joueurTab[1]);
+                mouvement(grilleClient, joueurTab[0], joueurTab[1]);
                 System.out.println();
 
                 //Vérification s'il y a un vainqueur
-                if (vainqueur(grilleOrdi)) {
+                if (vainqueur(grilleClient)) {
                     System.out.println("Vous avez gagné!");
                     fin = true;
                 }
@@ -454,10 +430,95 @@ public class bataille {
         }
     }
 
+
+    public static void serveur() throws IOException, ClassNotFoundException {
+        System.out.println("Vous êtes le Serveur");
+
+        int port = 9876;
+        ServerSocket server = new ServerSocket(port);
+
+        while (true) {
+            System.out.println("Waiting for the client request");
+
+            //Création du socket et attente de la connexion du client
+            Socket socket = server.accept();
+
+                /* PARTIE LIRE UN MESSAGE
+                //Lecture de l'objet envoyer par le client
+                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+
+                //Convertie l'objet en String
+                String message = (String) ois.readObject();
+                System.out.println("Message Received: " + message);
+                */
+
+            //Création d'un nouvelle objet à envoyer
+            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+
+            //Envoie au client
+            oos.writeObject(bataille.grilleClient);
+            //ois.close();
+            oos.close();
+            socket.close();
+
+            //Arreter si le client envoie un "exit"
+            //if(message.equalsIgnoreCase("exit")) break;
+            break;
+        }
+    }
+
+
+        public static void client() throws IOException, ClassNotFoundException, InterruptedException {
+            System.out.println("Vous êtes le Client");
+            InetAddress host = InetAddress.getLocalHost();
+            Socket socket = null;
+            ObjectOutputStream oos = null;
+            ObjectInputStream ois = null;
+
+            //Connexion au serveur
+            socket = new Socket(host.getHostName(), 9876);
+
+            /* PARTIE ENVOIE DUN MESSAGE
+            //Création d'un socket
+            oos = new ObjectOutputStream(socket.getOutputStream());
+            System.out.println("Sending request to Socket Server");
+                //Envoie de l'objet au serveur
+            else oos.writeObject(""+i);
+
+             */
+            //Lire la réponse du serveur
+            ois = new ObjectInputStream(socket.getInputStream());
+
+            //Convertir la réponse en String
+            int[][] message = (int[][]) ois.readObject();
+
+            bataille.AfficherGrille(message);
+
+            //System.out.println("Message: " + message);
+            ois.close();
+            //oos.close();
+            Thread.sleep(100);
+        }
+
     /**
      * Fonction principale
      */
-    public static void main(String[] args) {
-        engagement();
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException{
+        //engagement();
+        int srvCli = 0;
+        Scanner entreeUtilisateur = new Scanner(System.in);
+
+        System.out.println("Rentrer 1 pour Serveur et 2 pour Client : ");
+        srvCli = Integer.parseInt(entreeUtilisateur.nextLine());
+
+        if (srvCli == 1){
+            serveur();
+        }
+        else if (srvCli == 2){
+            client();
+        }
+        else{
+            System.out.println("Erreur!");
+        }
     }
 }
