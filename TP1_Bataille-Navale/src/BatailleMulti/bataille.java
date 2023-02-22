@@ -1,9 +1,6 @@
+package BatailleMulti;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -301,7 +298,7 @@ public class bataille {
      * @param l ligne
      * @param c colonne
      */
-    public static void mouvement(int [][]grille, int l, int c){
+    public static String mouvement(int [][]grille, int l, int c){
         int numBateau;
 
         if(grille[l][c] != 0 && grille[l][c] != 6){
@@ -309,13 +306,13 @@ public class bataille {
             grille[l][c] = 6;
 
             if(couler(grille, numBateau)){
-                System.out.print("Le bateau " + numBateau + " a été coulé!");
+                return "Le bateau " + numBateau + " a été coulé!";
             } else{
-                System.out.print("Touché");
+                return "Touché";
             }
         }
         else{
-            System.out.print("A l'eau");
+            return "A l'eau";
         }
     }
 
@@ -430,80 +427,10 @@ public class bataille {
         }
     }
 
-
-    public static void serveur() throws IOException, ClassNotFoundException {
-        System.out.println("Vous êtes le Serveur");
-
-        int port = 9876;
-        ServerSocket server = new ServerSocket(port);
-
-        while (true) {
-            System.out.println("Waiting for the client request");
-
-            //Création du socket et attente de la connexion du client
-            Socket socket = server.accept();
-
-                /* PARTIE LIRE UN MESSAGE
-                //Lecture de l'objet envoyer par le client
-                ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-
-                //Convertie l'objet en String
-                String message = (String) ois.readObject();
-                System.out.println("Message Received: " + message);
-                */
-
-            //Création d'un nouvelle objet à envoyer
-            ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-
-            //Envoie au client
-            oos.writeObject(bataille.grilleClient);
-            //ois.close();
-            oos.close();
-            socket.close();
-
-            //Arreter si le client envoie un "exit"
-            //if(message.equalsIgnoreCase("exit")) break;
-            break;
-        }
-    }
-
-
-        public static void client() throws IOException, ClassNotFoundException, InterruptedException {
-            System.out.println("Vous êtes le Client");
-            InetAddress host = InetAddress.getLocalHost();
-            Socket socket = null;
-            ObjectOutputStream oos = null;
-            ObjectInputStream ois = null;
-
-            //Connexion au serveur
-            socket = new Socket(host.getHostName(), 9876);
-
-            /* PARTIE ENVOIE DUN MESSAGE
-            //Création d'un socket
-            oos = new ObjectOutputStream(socket.getOutputStream());
-            System.out.println("Sending request to Socket Server");
-                //Envoie de l'objet au serveur
-            else oos.writeObject(""+i);
-
-             */
-            //Lire la réponse du serveur
-            ois = new ObjectInputStream(socket.getInputStream());
-
-            //Convertir la réponse en String
-            int[][] message = (int[][]) ois.readObject();
-
-            bataille.AfficherGrille(message);
-
-            //System.out.println("Message: " + message);
-            ois.close();
-            //oos.close();
-            Thread.sleep(100);
-        }
-
     /**
      * Fonction principale
      */
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException{
+    public static void main(String[] args) throws IOException, ClassNotFoundException{
         //engagement();
         int srvCli = 0;
         Scanner entreeUtilisateur = new Scanner(System.in);
@@ -512,10 +439,14 @@ public class bataille {
         srvCli = Integer.parseInt(entreeUtilisateur.nextLine());
 
         if (srvCli == 1){
-            serveur();
+            Serveur.init();
+            Serveur.engagement();
+            Serveur.arret();
         }
         else if (srvCli == 2){
-            client();
+            Client.init();
+            Client.engagement();
+            Client.arret();
         }
         else{
             System.out.println("Erreur!");
