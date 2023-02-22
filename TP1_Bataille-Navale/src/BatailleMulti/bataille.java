@@ -441,12 +441,10 @@ public class bataille {
         if (srvCli == 1){
             Serveur.init();
             Serveur.engagement();
-            Serveur.arret();
         }
         else if (srvCli == 2){
             Client.init();
             Client.engagement();
-            Client.arret();
         }
         else{
             System.out.println("Erreur!");
