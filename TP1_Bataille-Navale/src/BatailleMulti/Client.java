@@ -15,37 +15,37 @@ public class Client {
     public static ObjectInputStream ois;
 
     /**
-     * Fonction d'envoie de message
+     * Fonction d'envoi de message
      *
      * @param message Tableau d'entier à double dimension à envoyer
      */
     public static void envoie(int[][] message) throws IOException{
-        //Création du canal d'envoie
+        //Création du canal d'envoi
         socket = new Socket(host.getHostName(), 9876);
         oos = new ObjectOutputStream(socket.getOutputStream());
 
         //Envoie du message
         oos.writeObject(message);
 
-        //Fermeture du canal d'envoie
+        //Fermeture du canal d'envoi
         oos.close();
         socket.close();
     }
 
     /**
-     * Fonction d'envoie de message
+     * Fonction d'envoi de message
      *
      * @param message Tableau d'entier à envoyer
      */
     public static void envoie(int[] message) throws IOException{
-        //Création du canal d'envoie
+        //Création du canal d'envoi
         socket = new Socket(host.getHostName(), 9876);
         oos = new ObjectOutputStream(socket.getOutputStream());
 
         //Envoie du message
         oos.writeObject(message);
 
-        //Fermeture du canal d'envoie
+        //Fermeture du canal d'envoi
         oos.close();
         socket.close();
     }
@@ -71,7 +71,11 @@ public class Client {
     }
 
     /**
+     * <pre>
      * Initialisation du Client et de la grille
+     *
+     * Utilisation de https://www.digitalocean.com/community/tutorials/java-socket-programming-server-client pour les sockets
+     *</pre>
      */
     public static void init() throws IOException, ClassNotFoundException{
         boolean ok = false;
@@ -99,6 +103,9 @@ public class Client {
             host = InetAddress.getByName("127.0.0.1");
 
             //Attente d'un message du serveur pour indiquer qu'il a fini de remplir la grille
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
+
             System.out.println("Attente de remplissage du Serveur...");
             try {
                 socket = new Socket(host.getHostName(), 9876);
@@ -109,16 +116,18 @@ public class Client {
             }
         }
         socket.close();
-        int message = (int) reception();
+        int messageTempo = (int) reception();
 
         //Remplissage et envoie de la grille
         bataille.initGrille(bataille.grilleClient);
         envoie(bataille.grilleClient);
     }
 
+    /**
+     * Fonction de jeu qui permet de faire jouer les deux joueurs tour à tour et de vérifier s'il y a un vainqueur
+     */
     public static void engagement() throws IOException, ClassNotFoundException{
         boolean fin = false;
-        int message;
 
         while(!fin){
             System.out.println("Votre grille : ");
@@ -129,9 +138,13 @@ public class Client {
 
             System.out.println("Grille de l'autre joueur : ");
             bataille.AfficherGrilleInterrogation((int[][]) reception());
+            System.out.println();
 
-            //Envoie de l'entrée utilisateur
+            //Envoi de l'entrée utilisateur
             envoie(bataille.tirJoueur());
+
+            System.out.print("\033[H\033[2J");
+            System.out.flush();
 
             //Affichage de l'état du tir
             System.out.println("Vous avez attaqué : " + reception());
@@ -140,8 +153,10 @@ public class Client {
                 fin = true;
             }
             else {
+                System.out.println("Attente de l'attaque de l'autre joueur...");
                 System.out.println("L'autre joueur a attaqué : " + reception());
-                if((int) reception() == 2){
+                System.out.println();
+                if((int) reception() == 1){
                     System.out.println("L'autre joueur a gagné!");
                     fin = true;
                 }

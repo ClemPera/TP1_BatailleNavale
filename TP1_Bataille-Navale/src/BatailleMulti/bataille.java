@@ -1,26 +1,20 @@
 package BatailleMulti;
 
 import java.io.IOException;
-import java.util.Random;
 import java.util.Scanner;
 
 /**
- * Bataille navale Multijoueur local
- *
+ * Nom du programme : Bataille Navale version multijoueur
  * @author Clément Pera
+ * Date : 06 Mars 2023
+ * Résumé : Programme qui permet de jouer à la bataille navale contre un ordinateur
+ * L'ordinateur et le joueur disposent d’une grille de 10
+ * cases sur 10 cases, les colonnes de cette grille sont indiquées par une lettre de A à J et les
+ * lignes sont numérotées de 1 à 10. Sur cette grille sont placés 5 bateaux en horizontal ou en
+ * vertical. Le but de chaque joueur est de couler tous les bateaux de l’autre joueur
+ * Cette version est faite en multijoueur.
  */
 public class bataille {
-    public static Random rand = new Random();
-
-    /**
-     * Tire des entiers aléatoire entre a inclus et b exclu
-     * @param a à partir de ce nombre
-     * @param b à jusqu'à ce nombre b exclu
-     * @return retourne un nombre entier aléatoire entre a et b
-     */
-    public static int randRange(int a, int b){
-        return rand.nextInt(b-a)+a;
-    }
     public static int[][] grilleClient = new int [10][10];
     public static int[][] grilleServeur = new int [10][10];
 
@@ -28,63 +22,14 @@ public class bataille {
      * Vérifie si la position de placement du bateau est correct
      *
      * @param grille une grille
-     * @param l un numéro de ligne
-     * @param c un numéro de colonne (entre 0 et 9)
-     * @param d un entier codant une direction (1 pour horizontal et 2 pour vertical)
-     * @param t donnant le nombre de cases d'un bateau
+     * @param ligne un numéro de ligne
+     * @param colonne un numéro de colonne (entre 0 et 9)
+     * @param direction un entier codant une direction (1 pour horizontal et 2 pour vertical)
+     * @param type donnant le type du bateau
      *
      * @return Renvoie "vraie" si on peut mettre le bateau sur les cases correspondantes et sinon renvoie "faux"
      */
-    public static boolean posOk(int [][]grille, int l, int c, int d, int t){
-        int longueur = 0;
-
-        if(t == 1){
-            longueur = 5;
-        } else if(t == 2){
-            longueur = 4;
-        } else if(t == 3){
-            longueur = 3;
-        } else if(t == 4){
-            longueur = 3;
-        } else if(t == 5){
-            longueur = 2;
-        }
-
-        int verifLong = 0;
-
-        if(d == 1) { //Si c'est horizontal
-            if ((c + longueur) <= 10) {
-                for (int i = 0; i < longueur; i++) {
-                    if (grille[l][c + i] == 0) {
-                        verifLong++;
-                    }
-                }
-            }
-        } else if (d == 2) {//Si c'est vertical
-            if ((l + longueur) <= 10) {
-                for (int i = 0; i < longueur; i++) {
-                    if (grille[l + i][c] == 0) {
-                        verifLong++;
-                    }
-                }
-            }
-        }
-
-        if(verifLong==longueur)
-            return true;
-        else
-            return false;
-    }
-
-    /**
-     * Procédure pour ajouter un bateau à la grille ordi
-     *
-     * @param l numéro de ligne
-     * @param c numéro de colonne
-     * @param d numéro de direction
-     * @param type type de bateau
-     */
-    public static void ajoutBateau(int [][]grille,int l, int c, int d, int type){
+    public static boolean posOk(int [][]grille, int ligne, int colonne, int direction, int type){
         int longueur = 0;
 
         if(type == 1){
@@ -99,14 +44,64 @@ public class bataille {
             longueur = 2;
         }
 
-        grille[l][c] = type;
+        int verifLong = 0;
+
+        if(direction == 1) { //Si c'est horizontal
+            if ((colonne + longueur) <= 10) {
+                for (int i = 0; i < longueur; i++) {
+                    if (grille[ligne][colonne + i] == 0) {
+                        verifLong++;
+                    }
+                }
+            }
+        } else if (direction == 2) {//Si c'est vertical
+            if ((ligne + longueur) <= 10) {
+                for (int i = 0; i < longueur; i++) {
+                    if (grille[ligne + i][colonne] == 0) {
+                        verifLong++;
+                    }
+                }
+            }
+        }
+
+        if(verifLong==longueur)
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Procédure pour ajouter un bateau à la grille spécifié
+     *
+     * @param grille Quelle grille ajouter un bateau
+     * @param ligne numéro de ligne
+     * @param colonne numéro de colonne
+     * @param direction numéro de direction
+     * @param type type de bateau
+     */
+    public static void ajoutBateau(int [][]grille,int ligne, int colonne, int direction, int type){
+        int longueur = 0;
+
+        if(type == 1){
+            longueur = 5;
+        } else if(type == 2){
+            longueur = 4;
+        } else if(type == 3){
+            longueur = 3;
+        } else if(type == 4){
+            longueur = 3;
+        } else if(type == 5){
+            longueur = 2;
+        }
+
+        grille[ligne][colonne] = type;
 
         for (int i = 0; i < longueur; i++) {
-            if(d == 1) { //Si c'est horizontal
-                grille[l][c + i] = type;
+            if(direction == 1) { //Si c'est horizontal
+                grille[ligne][colonne + i] = type;
             }
             else {
-                grille[l + i][c] = type;
+                grille[ligne + i][colonne] = type;
             }
         }
     }
@@ -141,7 +136,7 @@ public class bataille {
     /**
      * Affiche la grille avec des point d'interrogation partout sauf où un bateau a été touché
      *
-     * @param grille Grille à utilisé
+     * @param grille Grille a utilisé
      */
     public static void AfficherGrilleInterrogation(int [][]grille){
         System.out.print("    ");
@@ -171,9 +166,9 @@ public class bataille {
     }
 
     /**
-     * Initialise la grille de jeu de l'utilisateur
+     * Initialise la grille de jeu
      *
-     * @param grille
+     * @param grille Quelle grille initialiser
      */
     public static void initGrille(int[][]grille){
         //Demander pour chaque bateau puis les placer avec un while dans la ligne idéal et les vérif avec posOk
@@ -205,13 +200,13 @@ public class bataille {
     }
 
     /**
-     * Pose une question à l'utilisateur par rapport à la lettre/colonne ou direction
+     * Pose une question à l'utilisateur rapport à la lettre, colonne ou direction
      *
-     * @param lct 0 = ligne, 1 = colonne, 2 = direction
+     * @param lcd 0 = Ligne, 1 = Colonne, 2 = Direction
      * @param type 0 = porte avion, 1 = croiseur, 2 = contre-torpilleur, 3 = sous-marin, 4 = torpilleur
      * @return retourne un entier indiquant la ligne, colonne ou direction que l'utilisateur a rentré
      */
-    public static int questionUtilisateur(int lct, int type){
+    public static int questionUtilisateur(int lcd, int type){
         String str = "";
         Scanner entreeUtilisateur = new Scanner(System.in);
         String longstr;
@@ -220,11 +215,11 @@ public class bataille {
 
         while(!ok) {
             ok = true;
-            if(lct == 0){
+            if(lcd == 0){
                 str = "Donner la ligne pour le ";
-            } else if(lct == 1){
+            } else if(lcd == 1){
                 str = "Donner la colonne pour le ";
-            } else if(lct == 2){
+            } else if(lcd == 2){
                 str = "Donner la direction pour le ";
             }
 
@@ -242,7 +237,7 @@ public class bataille {
 
             longstr = entreeUtilisateur.nextLine();
 
-            if (lct == 0){
+            if (lcd == 0){
                 try {
                     longint = Integer.parseInt(longstr);
                 }catch(NumberFormatException e){ok = false;}
@@ -250,13 +245,15 @@ public class bataille {
                     ok = false;
                 }
             }
-            else if (lct == 1) {
-                longint = Character.toUpperCase(longstr.charAt(0)) - 65;
+            else if (lcd == 1) {
+                try {
+                    longint = Character.toUpperCase(longstr.charAt(0)) - 65;
+                }catch(StringIndexOutOfBoundsException e){ok = false;}
                 if (longint < 0 || longint > 9) { //Vérification si la valeur de longint est correct
                     ok = false;
                 }
             }
-            else if (lct == 2){
+            else if (lcd == 2){
                 try {
                     longint = Integer.parseInt(longstr);
                 }catch(NumberFormatException e){ok = false;}
@@ -272,7 +269,6 @@ public class bataille {
 
         return longint;
     }
-
 
     /**
      * Fonction qui retourne "vrai" si le bateau est coulé sinon "faux"
@@ -295,15 +291,15 @@ public class bataille {
      * Affiche soit « Touché », soit « Coulé » (en indiquant de quel bateau il s’agit), soit « À l’eau ». Met aussi la grille à jour
      *
      * @param grille Sur quelle grille vérifier
-     * @param l ligne
-     * @param c colonne
+     * @param ligne la ligne
+     * @param colonne la colonne
      */
-    public static String mouvement(int [][]grille, int l, int c){
+    public static String mouvement(int [][]grille, int ligne, int colonne){
         int numBateau;
 
-        if(grille[l][c] != 0 && grille[l][c] != 6){
-            numBateau = grille[l][c];
-            grille[l][c] = 6;
+        if(grille[ligne][colonne] != 0 && grille[ligne][colonne] != 6){
+            numBateau = grille[ligne][colonne];
+            grille[ligne][colonne] = 6;
 
             if(couler(grille, numBateau)){
                 return "Le bateau " + numBateau + " a été coulé!";
@@ -323,9 +319,9 @@ public class bataille {
      * @return vrai s'il n'y a plus de bateau sinon faux
      */
     public static boolean vainqueur(int [][]grille){
-        for (int l = 0; l < 10; l++) {
-            for (int c = 0; c < 10; c++) {
-                if (grille[l][c] != 0 && grille[l][c] != 6) {
+        for (int ligne = 0; ligne < 10; ligne++) {
+            for (int colonne = 0; colonne < 10; colonne++) {
+                if (grille[ligne][colonne] != 0 && grille[ligne][colonne] != 6) {
                     return false;
                 }
             }
@@ -372,59 +368,6 @@ public class bataille {
         }
 
         return intTab;
-    }
-
-    /**
-     * Fonction qui replie les deux grilles et fait jouer à tour de rôle l'ordinateur et le joueur
-     *
-     */
-    public static void engagement(){
-        boolean fin = false;
-        //int[] ordiTab;
-        int[] joueurTab;
-
-        initGrille(grilleClient);
-        initGrille(grilleServeur);
-
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-
-        while(!fin) {
-            //Tir de l'ordinateur
-            System.out.println("L'ordinateur attaque! : ");
-            //ordiTab = tirOrdinateur();
-            //mouvement(grilleServeur,ordiTab[0],ordiTab[1]);
-
-            System.out.println();
-            System.out.println();
-            //Vérification s'il y a un vainqueur
-            if (vainqueur(grilleServeur)) {
-                System.out.println("L'ordinateur a gagné!");
-                fin = true;
-            }else{
-                System.out.println("Grille ordi");
-                AfficherGrilleInterrogation(grilleClient);
-
-                System.out.println();
-                System.out.println("Grille joueur");
-                AfficherGrille(grilleServeur);
-                System.out.println();
-                //Tir du joueur
-                joueurTab = tirJoueur();
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-
-                System.out.println("Vous avez attaqué! : ");
-                mouvement(grilleClient, joueurTab[0], joueurTab[1]);
-                System.out.println();
-
-                //Vérification s'il y a un vainqueur
-                if (vainqueur(grilleClient)) {
-                    System.out.println("Vous avez gagné!");
-                    fin = true;
-                }
-            }
-        }
     }
 
     /**
