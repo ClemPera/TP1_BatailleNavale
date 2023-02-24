@@ -433,11 +433,27 @@ public class bataille {
     public static void main(String[] args) throws IOException, ClassNotFoundException{
         //engagement();
         int srvCli = 0;
+        boolean ok = false;
         Scanner entreeUtilisateur = new Scanner(System.in);
 
-        System.out.println("Rentrer 1 pour Serveur et 2 pour Client : ");
-        srvCli = Integer.parseInt(entreeUtilisateur.nextLine());
+        while(!ok){
+            ok = true;
+            System.out.println("Rentrer 1 pour Serveur et 2 pour Client : ");
+            try {
+                srvCli = Integer.parseInt(entreeUtilisateur.nextLine());
+            }catch (NumberFormatException | StringIndexOutOfBoundsException e){
+                ok = false;
+            }
 
+            if(srvCli < 1 || srvCli > 2)
+            {
+                ok = false;
+            }
+
+            if(!ok){
+                System.out.println("Il y a une erreur dans votre entrée, veuillez réessayer");
+            }
+        }
         if (srvCli == 1){
             Serveur.init();
             Serveur.engagement();

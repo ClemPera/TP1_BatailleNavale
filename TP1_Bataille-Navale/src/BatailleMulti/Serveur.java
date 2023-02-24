@@ -123,27 +123,55 @@ public class Serveur {
         boolean fin = false;
         int[] tabTir;
         int[] message;
+        String attaqueCli;
+        String attaqueSrv;
 
         while(!fin){
-            //Envoie au client qu'on est prêt à recevoir
-            envoie(0);
+            envoie(bataille.grilleClient);
 
-            System.out.println("Grille serveur: ");
+            System.out.println("Grille serveur : ");
             bataille.AfficherGrille(bataille.grilleServeur);
 
-            //System.out.println("Grille serveur : ");
-            //bataille.AfficherGrille(bataille.grilleServeur);
-            //Envoie de la grille Client
+            System.out.println();
+            System.out.println();
+
+            System.out.println("Grille client : ");
+            bataille.AfficherGrilleInterrogation(bataille.grilleClient);
+
             envoie(bataille.grilleServeur);
 
-            //Envoie de la grille Serveur
-            //oos.writeObject(bataille.grilleServeur);
-
-            //Attente de l'entrée utilisateur
+            //Attente de du tir du client
             message = (int[]) reception();
 
-            //Renvoie si le tir a touché ou non
-            envoie(bataille.mouvement(bataille.grilleServeur,message[0],message[1]));
+            //Renvoie et affiche si le tir a touché ou non
+            attaqueCli = bataille.mouvement(bataille.grilleServeur,message[0],message[1]);
+            envoie(attaqueCli);
+            System.out.println("L'autre joueur a attaqué : " + attaqueCli);
+
+            if (bataille.vainqueur(bataille.grilleServeur)) {
+                System.out.println("L'autre joueur a gagné!");
+
+                //Client a gagné, envoie de 1
+                envoie(1);
+
+                fin = true;
+            }
+            else {
+                //Attaque
+                tabTir = bataille.tirJoueur();
+                attaqueSrv = bataille.mouvement(bataille.grilleClient, tabTir[0], tabTir[1]);
+                envoie(attaqueSrv);
+                System.out.println("Vous avez attaqué : " + attaqueSrv);
+
+                if(bataille.vainqueur(bataille.grilleClient)){
+                    System.out.println("Vous avez gagné!");
+
+                    //Le serveur a gagné, envoie de 1
+                    envoie(1);
+
+                    fin = true;
+                }
+            }
         }
     }
 }

@@ -3,8 +3,10 @@ package BatailleMulti;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Scanner;
 
 public class Client {
     public static InetAddress host;
@@ -67,16 +69,45 @@ public class Client {
 
         return message;
     }
+
     /**
      * Initialisation du Client et de la grille
      */
     public static void init() throws IOException, ClassNotFoundException{
-        System.out.println("Vous êtes le Client");
-        host = InetAddress.getByName("127.0.0.1");
+        boolean ok = false;
+        boolean okIp = false;
+        Scanner entreeUtilisateur = new Scanner(System.in);
+        String addrIp;
 
-        //Attente d'un message du serveur pour indiquer qu'il a fini de remplir la grille
-        System.out.println("Attente de remplissage du Serveur");
-        socket = new Socket(host.getHostName(), 9876);
+        while(!okIp) {
+            while (!ok) {
+                ok = true;
+                okIp = true;
+                System.out.println("Rentrer l'adresse ip du serveur (appuyer sur entrée pour : 127.0.0.1) : ");
+                try {
+                    addrIp = entreeUtilisateur.nextLine();
+                    if (addrIp.isBlank()) {
+                        addrIp = "127.0.0.1";
+                    }
+                } catch (NumberFormatException | StringIndexOutOfBoundsException e) {
+                    ok = false;
+                    System.out.println("Il y a une erreur dans votre entrée, veuillez réessayer");
+                }
+            }
+
+            System.out.println("Vous êtes le Client");
+            host = InetAddress.getByName("127.0.0.1");
+
+            //Attente d'un message du serveur pour indiquer qu'il a fini de remplir la grille
+            System.out.println("Attente de remplissage du Serveur...");
+            try {
+                socket = new Socket(host.getHostName(), 9876);
+            } catch (ConnectException e) {
+                okIp = false;
+                ok = false;
+                System.out.println("Le serveur n'est pas crée ou il y a un problème dans l'adresse ip, veuillez réessayer");
+            }
+        }
         socket.close();
         int message = (int) reception();
 
@@ -90,22 +121,31 @@ public class Client {
         int message;
 
         while(!fin){
-            //Attente que le serveur soit prêt à recevoir
-            message = (int) reception();
-
-            //Attendre l'envoie de la grille du client depuis le serveur
-            System.out.println("Grille serveur : ");
+            System.out.println("Votre grille : ");
             bataille.AfficherGrille((int[][]) reception());
 
-            //Attendre l'envoie de la grille du client depuis le serveur
-            //System.out.println("La grille de l'autre joueur : ");
-            //bataille.AfficherGrille((int[][]) ois.readObject());
+            System.out.println();
+            System.out.println();
+
+            System.out.println("Grille de l'autre joueur : ");
+            bataille.AfficherGrilleInterrogation((int[][]) reception());
 
             //Envoie de l'entrée utilisateur
             envoie(bataille.tirJoueur());
 
             //Affichage de l'état du tir
-            System.out.println((String) reception());
+            System.out.println("Vous avez attaqué : " + reception());
+            if((int) reception() == 1){
+                System.out.println("Vous avez gagné!");
+                fin = true;
+            }
+            else {
+                System.out.println("L'autre joueur a attaqué : " + reception());
+                if((int) reception() == 2){
+                    System.out.println("L'autre joueur a gagné!");
+                    fin = true;
+                }
+            }
         }
     }
 }
