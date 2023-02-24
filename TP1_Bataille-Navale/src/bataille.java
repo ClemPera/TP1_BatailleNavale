@@ -23,8 +23,8 @@ public class bataille {
     public static int randRange(int a, int b){
         return rand.nextInt(b-a)+a;
     }
-    public static int[][]grilleOrdi = new int [10][10];
-    public static int[][]grilleJeu = new int [10][10];
+    public static int[][] grilleOrdi = new int [10][10];
+    public static int[][] grilleJeu = new int [10][10];
 
     /**
      * Vérifie si la position de placement du bateau est correct
@@ -99,8 +99,9 @@ public class bataille {
     }
 
     /**
-     * Procédure pour ajouter un bateau à la grille ordi
+     * Procédure pour ajouter un bateau à la grille spécifié
      *
+     * @param grille Quelle grille ajouter un bateau
      * @param ligne numéro de ligne
      * @param colonne numéro de colonne
      * @param direction numéro de direction
@@ -270,7 +271,9 @@ public class bataille {
                 }
             }
             else if (lcd == 1) {
-                longint = Character.toUpperCase(longstr.charAt(0)) - 65;
+                try {
+                    longint = Character.toUpperCase(longstr.charAt(0)) - 65;
+                }catch(StringIndexOutOfBoundsException e){ok = false;}
                 if (longint < 0 || longint > 9) { //Vérification si la valeur de longint est correct
                     ok = false;
                 }
@@ -311,7 +314,7 @@ public class bataille {
     }
 
     /**
-     * Affiche soit « Touché », soit « Coulé » (en indiquant de quel bateau il s’agit), soit « À ligne’eau ». Met aussi la grille à jour
+     * Affiche soit « Touché », soit « Coulé » (en indiquant de quel bateau il s’agit), soit « À l’eau ». Met aussi la grille à jour
      *
      * @param grille Sur quelle grille vérifier
      * @param ligne la ligne
@@ -348,7 +351,6 @@ public class bataille {
 
         return intTab;
     }
-
 
     /**
      * Retourne vrai s'il n'y a plus de bateau sur la grille envoyé
@@ -408,7 +410,7 @@ public class bataille {
     }
 
     /**
-     * Fonction qui replie les deux grilles et fait jouer à tour de rôle l'ordinateur et le joueur. Elle vérifie aussi s'il y a un vainqueur
+     * Fonction qui remplie les deux grilles et fait jouer à tour de rôle l'ordinateur et le joueur. Elle vérifie aussi s'il y a un vainqueur
      */
     public static void engagement(){
         boolean fin = false;
